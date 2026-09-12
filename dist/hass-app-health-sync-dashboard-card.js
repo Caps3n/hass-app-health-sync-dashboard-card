@@ -688,10 +688,16 @@ class HealthSyncDashboardCard extends HTMLElement {
     const entity = this._entity(metric);
     const statistics = metric === "heart_rate" && entity ? this._statistics[entity] || [] : [];
     const rawHistory = entity ? this._history[entity] || [] : [];
-    const points = metric === "heart_rate"
-      ? [...statistics, ...rawHistory]
-      : statistics.length ? [...statistics] : [...rawHistory];
-    if (metric === "heart_rate") points.push(...this._liveHeartHistory);
+    let points;
+    if (metric === "heart_rate") {
+      // Raw history is preferred (real readings). Statistics (hourly averages) only fill
+      // hours where raw history has no data, so they don't distort the live-looking trace.
+      const rawByHour = new Set(rawHistory.map((p) => Math.floor(p.t / 3600000)));
+      const fillStats = statistics.filter((p) => !rawByHour.has(Math.floor(p.t / 3600000)));
+      points = [...fillStats, ...rawHistory, ...this._liveHeartHistory];
+    } else {
+      points = statistics.length ? [...statistics] : [...rawHistory];
+    }
     const state = this._state(metric);
     const currentValue = Number(state?.state);
     const rawTime=state?.last_reported||state?.last_updated||state?.last_changed;
