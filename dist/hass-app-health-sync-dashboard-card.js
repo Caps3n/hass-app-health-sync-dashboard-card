@@ -3,7 +3,7 @@
  * MIT License
  */
 
-const HS_VERSION = "0.6.4";
+const HS_VERSION = "0.6.5";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
