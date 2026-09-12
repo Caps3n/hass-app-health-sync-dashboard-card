@@ -181,8 +181,8 @@ npm run check
 
 ## Acknowledgements
 
-A big thank you to [mannotfood](https://github.com/mannotfood) for creating the original
-[HealthSync Dashboard Card](https://github.com/mannotfood/healthsync-dashboard-card),
+A big thank you to [BrainDeLook](https://github.com/BrainDeLook) for creating the original
+[HealthSync Dashboard Card](https://github.com/BrainDeLook/healthsync-dashboard-card),
 which served as the foundation this project was built upon.
 
 ## License
