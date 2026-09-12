@@ -690,11 +690,23 @@ class HealthSyncDashboardCard extends HTMLElement {
     const rawHistory = entity ? this._history[entity] || [] : [];
     let points;
     if (metric === "heart_rate") {
-      // Raw history is preferred (real readings). Statistics (hourly averages) only fill
-      // hours where raw history has no data, so they don't distort the live-looking trace.
+      // Raw history preferred; statistics only fill hours with no raw data.
       const rawByHour = new Set(rawHistory.map((p) => Math.floor(p.t / 3600000)));
       const fillStats = statistics.filter((p) => !rawByHour.has(Math.floor(p.t / 3600000)));
-      points = [...fillStats, ...rawHistory, ...this._liveHeartHistory];
+      // Bucket raw readings into 2-minute bins (average) so dense workout data stays smooth.
+      const BUCKET_MS = 2 * 60 * 1000;
+      const buckets = new Map();
+      for (const p of rawHistory) {
+        const key = Math.floor(p.t / BUCKET_MS);
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(p);
+      }
+      const thinned = [...buckets.values()].map((bucket) => {
+        const avg = Math.round(bucket.reduce((s, p) => s + p.v, 0) / bucket.length);
+        const mid = bucket[Math.floor(bucket.length / 2)];
+        return { t: mid.t, v: avg, a: mid.a };
+      });
+      points = [...fillStats, ...thinned, ...this._liveHeartHistory];
     } else {
       points = statistics.length ? [...statistics] : [...rawHistory];
     }
