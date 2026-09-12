@@ -1,9 +1,9 @@
-/* Health-Sync Dashboard Card v0.6.2
+/* Health-Sync Dashboard Card v0.6.3
  * A dependency-free Lovelace card for the HA Companion App (Apple Health / Health Connect).
  * MIT License
  */
 
-const HS_VERSION = "0.6.2";
+const HS_VERSION = "0.6.3";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
@@ -687,7 +687,10 @@ class HealthSyncDashboardCard extends HTMLElement {
   _historyPoints(metric) {
     const entity = this._entity(metric);
     const statistics = metric === "heart_rate" && entity ? this._statistics[entity] || [] : [];
-    const points = statistics.length ? [...statistics] : entity ? [...(this._history[entity] || [])] : [];
+    const rawHistory = entity ? this._history[entity] || [] : [];
+    const points = metric === "heart_rate"
+      ? [...statistics, ...rawHistory]
+      : statistics.length ? [...statistics] : [...rawHistory];
     if (metric === "heart_rate") points.push(...this._liveHeartHistory);
     const state = this._state(metric);
     const currentValue = Number(state?.state);
