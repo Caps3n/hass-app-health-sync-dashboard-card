@@ -8,9 +8,6 @@ A compact, responsive Home Assistant dashboard card for health data from the
 **Home Assistant iOS Companion App** (Apple Health) and the
 **Home Assistant Android Companion App** (Health Connect).
 
-> Based on the original [HealthSync Dashboard Card](https://github.com/mannotfood/healthsync-dashboard-card) —
-> adapted to work directly with the HA Companion App without any extra integration.
-
 ## Features
 
 - Automatic discovery of HA Companion App Apple Health and Health Connect entities
@@ -181,6 +178,12 @@ provides it as attributes.
 npm test
 npm run check
 ```
+
+## Acknowledgements
+
+A big thank you to [mannotfood](https://github.com/mannotfood) for creating the original
+[HealthSync Dashboard Card](https://github.com/mannotfood/healthsync-dashboard-card),
+which served as the foundation this project was built upon.
 
 ## License
 
