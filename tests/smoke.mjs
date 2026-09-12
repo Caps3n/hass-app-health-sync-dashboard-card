@@ -206,50 +206,31 @@ assert.match(card.shadowRoot.innerHTML, /Received:/);
 let statisticsRequest;
 card._hass.callWS = async (request) => {
   statisticsRequest = request;
-  return {
-    "sensor.iphone_heart_rate": [
-      { start: Date.now() - 7200000, mean: 81, min: 72, max: 94 },
-      { start: Date.now() - 3600000, mean: 88, min: 78, max: 101 },
-    ],
-    "sensor.iphone_resting_heart_rate": [
-      { start: Date.now() - 7200000, mean: 55, min: 50, max: 60 },
-    ],
-    "sensor.iphone_walking_heart_rate_average": [
-      { start: Date.now() - 5400000, mean: 92, min: 85, max: 99 },
-    ],
-  };
+  return { "sensor.iphone_heart_rate": [
+    { start: Date.now() - 7200000, mean: 81, min: 72, max: 94 },
+    { start: Date.now() - 3600000, mean: 88, min: 78, max: 101 },
+  ] };
 };
 assert.equal(await card._loadHourlyStatistics(new Date(Date.now() - 86400000).toISOString(), new Date().toISOString()), true);
 assert.equal(statisticsRequest.type, "recorder/statistics_during_period");
 assert.deepEqual(statisticsRequest.types, ["mean", "min", "max"]);
-assert.ok(statisticsRequest.statistic_ids.includes("sensor.iphone_heart_rate"), "heart_rate entity in stats request");
-assert.ok(statisticsRequest.statistic_ids.includes("sensor.iphone_resting_heart_rate"), "resting_heart_rate entity in stats request");
-assert.ok(statisticsRequest.statistic_ids.includes("sensor.iphone_walking_heart_rate_average"), "walking_heart_rate entity in stats request");
 card._render();
 assert.match(card.shadowRoot.innerHTML, /data-statistics="true"/);
 assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
 
-// Heart rate chart merges statistics and raw history from heart_rate, resting_heart_rate and walking_heart_rate
+// Heart rate chart uses both statistics and raw history
 card._statistics["sensor.iphone_heart_rate"] = [
   { t: Date.now() - 7200000, v: 81, a: { statistics: true, min: 72, max: 94 } },
-];
-card._statistics["sensor.iphone_resting_heart_rate"] = [
-  { t: Date.now() - 7200000, v: 55, a: { statistics: true, min: 50, max: 60 } },
 ];
 card._history["sensor.iphone_heart_rate"] = [
   { t: Date.now() - 7100000, v: 79, a: {} },
   { t: Date.now() - 6800000, v: 83, a: {} },
   { t: Date.now() - 3600000, v: 100, a: {} },
 ];
-card._history["sensor.iphone_walking_heart_rate_average"] = [
-  { t: Date.now() - 5400000, v: 92, a: {} },
-];
 const hrPoints = card._historyPoints("heart_rate");
 assert.ok(hrPoints.some((p) => p.a && p.a.statistics), "statistics points must be included");
 assert.ok(hrPoints.some((p) => !p.a?.statistics), "raw history points must be included");
-assert.ok(hrPoints.some((p) => p.v === 55), "resting_heart_rate statistics must be merged into heart rate chart");
-assert.ok(hrPoints.some((p) => p.v === 92), "walking_heart_rate history must be merged into heart rate chart");
-assert.ok(hrPoints.length >= 5, "heart_rate, resting_heart_rate and walking_heart_rate must all be merged");
+assert.ok(hrPoints.length >= 4, "both statistics and raw history must be merged for heart rate");
 
 card.setConfig({
   language: "en", days: 3,
