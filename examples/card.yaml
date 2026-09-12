@@ -1,54 +1,19 @@
-type: custom:healthsync-dashboard-card
-title: Здоровье
-language: ru
+type: custom:hass-app-health-sync-dashboard-card
+title: Health
+language: auto
 days: 7
 step_goal: 10000
 calorie_goal: 600
 show_activity: true
 show_sleep: true
 show_heart_rate: true
-show_workouts_tab: true
 
-# Необязательный пользовательский порядок плиток:
-# tile_order:
-#   - heart_rate
-#   - blood_oxygen
-#   - steps
-#   - active_calories
+# Optional: select which mobile device this card reads from
+# (set in the graphical editor or here via YAML)
+# mobile_device: 0123456789abcdef
 
-# Необязательно: устройство для точных исходных точек графика пульса
-# (можно выбрать через графический редактор; без него карточка попробует
-# определить устройство автоматически).
-# device_id: 0123456789abcdef0123456789abcdef
-
-# Сущности стандартной установки HealthSync определяются автоматически.
-# При переименовании их можно указать вручную:
+# Entities are discovered automatically from the HA Companion App.
+# Override individual entities here if needed:
 # entities:
-#   steps: sensor.healthsync_steps_today
-#   active_calories: sensor.healthsync_active_calories_today
-#   heart_rate: sensor.healthsync_heart_rate
-#   heart_rate_variability: sensor.healthsync_heart_rate_variability
-#   resting_heart_rate: sensor.healthsync_resting_heart_rate
-#   blood_pressure_systolic: sensor.healthsync_blood_pressure_systolic
-#   blood_pressure_diastolic: sensor.healthsync_blood_pressure_diastolic
-#   walking_heart_rate: sensor.healthsync_walking_heart_rate
-#   heart_rate_recovery: sensor.healthsync_heart_rate_recovery
-#   afib_burden: sensor.healthsync_afib_burden
-#   blood_oxygen: sensor.healthsync_blood_oxygen
-#   respiratory_rate: sensor.healthsync_respiratory_rate
-#   body_temperature: sensor.healthsync_body_temperature
-#   blood_glucose: sensor.healthsync_blood_glucose
-#   body_mass_index: sensor.healthsync_body_mass_index
-#   body_fat_percentage: sensor.healthsync_body_fat_percentage
-#   lean_body_mass: sensor.healthsync_lean_body_mass
-#   height: sensor.healthsync_height
-#   waist_circumference: sensor.healthsync_waist_circumference
-#   sleep_duration: sensor.healthsync_sleep_last_night
-#   sleep_onset: sensor.healthsync_fell_asleep
-#   sleep_wake: sensor.healthsync_woke_up
-#   last_sync: sensor.healthsync_last_sync
-#   last_workout_type: sensor.healthsync_workouts_last_workout_type
-#   last_workout_duration: sensor.healthsync_workouts_last_workout_duration
-#   last_workout_distance: sensor.healthsync_workouts_last_workout_distance
-#   last_workout_calories: sensor.healthsync_workouts_last_workout_calories
-#   recent_workouts: sensor.healthsync_workouts_recent_workouts
+#   steps: sensor.my_iphone_steps
+#   heart_rate: sensor.my_iphone_heart_rate

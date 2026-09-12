@@ -1,10 +1,10 @@
 {
-  "name": "healthsync-dashboard-card",
-  "version": "0.5.2",
+  "name": "hass-app-health-sync-dashboard-card",
+  "version": "0.6.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check dist/healthsync-dashboard-card.js",
+    "check": "node --check dist/hass-app-health-sync-dashboard-card.js",
     "test": "node tests/smoke.mjs"
   }
 }

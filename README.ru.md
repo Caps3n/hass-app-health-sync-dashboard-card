@@ -58,7 +58,7 @@
 После установки карточка появится в графическом каталоге Home Assistant. Минимальный YAML:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 ```
 
 В графическом редакторе раздел **«Плитки показателей»** объединяет переключатели
@@ -67,7 +67,7 @@ type: custom:healthsync-dashboard-card
 Пример настроек:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 title: Здоровье
 language: ru
 device_id: 0123456789abcdef0123456789abcdef # необязательно, включает точную историю
@@ -121,7 +121,7 @@ tile_order:
 в графическом редакторе или указать вручную:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 entities:
   steps: sensor.healthsync_steps_today
   active_calories: sensor.healthsync_active_calories_today

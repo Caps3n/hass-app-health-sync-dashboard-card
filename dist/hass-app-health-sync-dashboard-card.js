@@ -342,7 +342,7 @@ class HealthSyncDashboardCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("healthsync-dashboard-card-editor");
+    return document.createElement("hass-app-health-sync-dashboard-card-editor");
   }
 
   static discoverEntities(hass, allowedEntityIds) {
@@ -633,7 +633,7 @@ class HealthSyncDashboardCard extends HTMLElement {
   }
 
   _prepareChartState(hasActivity, hasSleep, hasHeart) {
-    const key = "healthsync-dashboard-card:expanded";
+    const key = "hass-app-health-sync-dashboard-card:expanded";
     const available = [
       hasActivity ? "activity" : "",
       hasSleep ? "sleep" : "",
@@ -1170,20 +1170,20 @@ class HealthSyncDashboardCardEditor extends HTMLElement {
   }
 }
 
-if (!customElements.get("healthsync-dashboard-card")) {
-  customElements.define("healthsync-dashboard-card", HealthSyncDashboardCard);
+if (!customElements.get("hass-app-health-sync-dashboard-card")) {
+  customElements.define("hass-app-health-sync-dashboard-card", HealthSyncDashboardCard);
 }
-if (!customElements.get("healthsync-dashboard-card-editor")) {
-  customElements.define("healthsync-dashboard-card-editor", HealthSyncDashboardCardEditor);
+if (!customElements.get("hass-app-health-sync-dashboard-card-editor")) {
+  customElements.define("hass-app-health-sync-dashboard-card-editor", HealthSyncDashboardCardEditor);
 }
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "healthsync-dashboard-card",
+  type: "hass-app-health-sync-dashboard-card",
   name: "HealthSync Dashboard Card",
   description: "A responsive dashboard card for Apple Health and Android Health Connect via the HA Companion App.",
   preview: true,
-  documentationURL: "https://github.com/Caps3n/healthsync-dashboard-card",
+  documentationURL: "https://github.com/Caps3n/hass-app-health-sync-dashboard-card",
 });
 
 console.info(`%c HEALTHSYNC-DASHBOARD-CARD %c v${HS_VERSION} `,"color:white;background:#4c8dff;font-weight:700","color:#4c8dff;background:#eaf2ff");

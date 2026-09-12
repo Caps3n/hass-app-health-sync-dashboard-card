@@ -76,7 +76,7 @@ The visual card picker lists **HealthSync Dashboard Card** after installation.
 Minimal YAML:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 ```
 
 In the visual editor, the **Metric tiles** section combines visibility switches
@@ -85,7 +85,7 @@ and drag handles. Drag a row to place that metric in the same position on the ca
 Common options:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 title: Health
 language: auto
 days: 7
@@ -131,7 +131,7 @@ Entities are discovered automatically from the HA Companion App sensors. Renamed
 entities can be selected in the graphical editor or overridden in YAML:
 
 ```yaml
-type: custom:healthsync-dashboard-card
+type: custom:hass-app-health-sync-dashboard-card
 entities:
   steps: sensor.steps
   active_calories: sensor.active_energy

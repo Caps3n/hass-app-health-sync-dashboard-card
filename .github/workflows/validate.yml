@@ -27,6 +27,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Check distributable
-        run: node --check dist/healthsync-dashboard-card.js
+        run: node --check dist/hass-app-health-sync-dashboard-card.js
       - name: Run smoke test
         run: node tests/smoke.mjs
