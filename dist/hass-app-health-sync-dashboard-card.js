@@ -690,8 +690,11 @@ class HealthSyncDashboardCard extends HTMLElement {
     const rawHistory = entity ? this._history[entity] || [] : [];
     let points;
     if (metric === "heart_rate") {
-      points = [...statistics, ...rawHistory];
-      points.push(...this._liveHeartHistory);
+      const allRaw = [...rawHistory, ...this._liveHeartHistory];
+      // Keep a statistic only when no raw reading exists within ±30 min of it.
+      const HALF = 30 * 60 * 1000;
+      const fillStats = statistics.filter((s) => !allRaw.some((r) => Math.abs(r.t - s.t) <= HALF));
+      points = [...fillStats, ...allRaw];
     } else {
       points = statistics.length ? [...statistics] : [...rawHistory];
     }

@@ -218,19 +218,20 @@ card._render();
 assert.match(card.shadowRoot.innerHTML, /data-statistics="true"/);
 assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
 
-// Heart rate chart merges statistics and raw history for maximum coverage
+// HR chart: statistics fill gaps >30 min from any raw reading; raw readings always included
 card._statistics["sensor.iphone_heart_rate"] = [
-  { t: Date.now() - 7200000, v: 81, a: { statistics: true } },
+  { t: Date.now() - 14400000, v: 65, a: { statistics: true } }, // 4h ago, no raw nearby → kept
+  { t: Date.now() - 7100000,  v: 81, a: { statistics: true } }, // ~2h ago, raw at -7000s nearby → dropped
 ];
 card._history["sensor.iphone_heart_rate"] = [
-  { t: Date.now() - 7100000, v: 79, a: {} },
+  { t: Date.now() - 7000000, v: 79, a: {} },
   { t: Date.now() - 6800000, v: 83, a: {} },
   { t: Date.now() - 3600000, v: 100, a: {} },
 ];
 const hrPoints = card._historyPoints("heart_rate");
-assert.ok(hrPoints.some((p) => p.a?.statistics), "statistics points must be included");
+assert.ok(hrPoints.some((p) => p.a?.statistics && p.v === 65), "stat with no nearby raw must be included");
+assert.ok(!hrPoints.some((p) => p.a?.statistics && p.v === 81), "stat near a raw reading must be suppressed");
 assert.ok(hrPoints.some((p) => !p.a?.statistics), "raw history points must be included");
-assert.ok(hrPoints.length >= 4, "both statistics and raw history must be merged for heart rate");
 card._statistics["sensor.iphone_heart_rate"] = [];
 
 card.setConfig({
