@@ -218,24 +218,19 @@ card._render();
 assert.match(card.shadowRoot.innerHTML, /data-statistics="true"/);
 assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
 
-// Heart rate: raw history dominates; statistics only fill hours with no raw data
-const statsHour = Math.floor((Date.now() - 7200000) / 3600000); // 2 h ago
-const rawHour   = Math.floor((Date.now() - 3600000) / 3600000); // 1 h ago (different hour)
+// Heart rate chart merges statistics and raw history for maximum coverage
 card._statistics["sensor.iphone_heart_rate"] = [
-  { t: statsHour * 3600000, v: 81, a: { statistics: true } }, // hour with NO raw → should appear
+  { t: Date.now() - 7200000, v: 81, a: { statistics: true } },
 ];
 card._history["sensor.iphone_heart_rate"] = [
-  { t: rawHour * 3600000 + 60000,  v: 79, a: {} }, // hour with raw data
-  { t: rawHour * 3600000 + 300000, v: 83, a: {} },
+  { t: Date.now() - 7100000, v: 79, a: {} },
+  { t: Date.now() - 6800000, v: 83, a: {} },
+  { t: Date.now() - 3600000, v: 100, a: {} },
 ];
 const hrPoints = card._historyPoints("heart_rate");
-assert.ok(hrPoints.some((p) => p.a?.statistics), "statistics fill hours without raw data");
-assert.ok(hrPoints.some((p) => !p.a?.statistics), "raw history points included");
-// The statistic point for the same hour as raw data must NOT be added (raw preferred)
-const rawHourStat = { t: rawHour * 3600000, v: 99, a: { statistics: true } };
-card._statistics["sensor.iphone_heart_rate"] = [rawHourStat];
-const hrPointsNoStat = card._historyPoints("heart_rate");
-assert.ok(!hrPointsNoStat.some((p) => p.a?.statistics && p.v === 99), "stat for covered hour must be suppressed");
+assert.ok(hrPoints.some((p) => p.a?.statistics), "statistics points must be included");
+assert.ok(hrPoints.some((p) => !p.a?.statistics), "raw history points must be included");
+assert.ok(hrPoints.length >= 4, "both statistics and raw history must be merged for heart rate");
 card._statistics["sensor.iphone_heart_rate"] = [];
 
 card.setConfig({
