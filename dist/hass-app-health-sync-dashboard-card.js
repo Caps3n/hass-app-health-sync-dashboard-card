@@ -3,7 +3,7 @@
  * MIT License
  */
 
-const HS_VERSION = "0.6.3";
+const HS_VERSION = "0.6.4";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
@@ -691,7 +691,15 @@ class HealthSyncDashboardCard extends HTMLElement {
     const points = metric === "heart_rate"
       ? [...statistics, ...rawHistory]
       : statistics.length ? [...statistics] : [...rawHistory];
-    if (metric === "heart_rate") points.push(...this._liveHeartHistory);
+    if (metric === "heart_rate") {
+      points.push(...this._liveHeartHistory);
+      for (const extraMetric of ["resting_heart_rate", "walking_heart_rate"]) {
+        const extraEntity = this._entity(extraMetric);
+        if (extraEntity) {
+          points.push(...(this._statistics[extraEntity] || []), ...(this._history[extraEntity] || []));
+        }
+      }
+    }
     const state = this._state(metric);
     const currentValue = Number(state?.state);
     const rawTime=state?.last_reported||state?.last_updated||state?.last_changed;
@@ -885,7 +893,7 @@ class HealthSyncDashboardCard extends HTMLElement {
 
   _scheduleHistory() {
     if (!this._hass || !this.config || this._loadingHistory) return;
-    const metrics=["steps","active_calories","sleep_duration","heart_rate"];
+    const metrics=["steps","active_calories","sleep_duration","heart_rate","resting_heart_rate","walking_heart_rate"];
     const entities=[...new Set(metrics.map((m)=>this._entity(m)).filter(Boolean))];
     if (!entities.length) return;
     const key=`${entities.join(",")}|${this.config.days}`;
@@ -920,29 +928,34 @@ class HealthSyncDashboardCard extends HTMLElement {
   }
 
   async _loadHourlyStatistics(start, end) {
-    const entity = this._entity("heart_rate");
-    if (!entity || typeof this._hass?.callWS !== "function") return false;
+    const heartEntities = ["heart_rate","resting_heart_rate","walking_heart_rate"]
+      .map((m) => this._entity(m)).filter(Boolean);
+    if (!heartEntities.length || typeof this._hass?.callWS !== "function") return false;
     try {
       const response = await this._hass.callWS({
         type: "recorder/statistics_during_period",
         start_time: start,
         end_time: end,
-        statistic_ids: [entity],
+        statistic_ids: heartEntities,
         period: "hour",
         units: {},
         types: ["mean", "min", "max"],
       });
-      const rows = Array.isArray(response?.[entity]) ? response[entity] : [];
-      const points = rows.map((row) => {
-        const rawTime = row.start ?? row.end;
-        const numericTime = Number(rawTime);
-        const t = Number.isFinite(numericTime) ? numericTime * (numericTime < 1e12 ? 1000 : 1) : new Date(rawTime).getTime();
-        const v = Number(row.mean ?? row.max ?? row.min);
-        return { t, v, a: { statistics: true, min: row.min, max: row.max } };
-      }).filter((point) => Number.isFinite(point.t) && this._isValidHeartRate(point.v));
-      const previous = JSON.stringify(this._statistics[entity] || []);
-      this._statistics[entity] = points;
-      return previous !== JSON.stringify(points);
+      let changed = false;
+      for (const ent of heartEntities) {
+        const rows = Array.isArray(response?.[ent]) ? response[ent] : [];
+        const points = rows.map((row) => {
+          const rawTime = row.start ?? row.end;
+          const numericTime = Number(rawTime);
+          const t = Number.isFinite(numericTime) ? numericTime * (numericTime < 1e12 ? 1000 : 1) : new Date(rawTime).getTime();
+          const v = Number(row.mean ?? row.max ?? row.min);
+          return { t, v, a: { statistics: true, min: row.min, max: row.max } };
+        }).filter((point) => Number.isFinite(point.t) && this._isValidHeartRate(point.v));
+        const previous = JSON.stringify(this._statistics[ent] || []);
+        this._statistics[ent] = points;
+        if (previous !== JSON.stringify(points)) changed = true;
+      }
+      return changed;
     } catch (error) {
       console.debug("HealthSync Dashboard Card: hourly statistics unavailable", error);
       return false;

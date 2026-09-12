@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.3-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.6.4-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
