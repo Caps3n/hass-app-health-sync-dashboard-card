@@ -1,4 +1,4 @@
-[Русская версия](README.ru.md)
+[Deutsch](README.de.md) | [Русский](README.ru.md)
 
 # Health-Sync Dashboard Card
 

@@ -1,83 +1,107 @@
-[Original README in English](README.md)
+[English](README.md) | [Deutsch](README.de.md)
 
-# HealthSync Dashboard Card
+# Health-Sync Dashboard Card
 
-![Демонстрация HealthSync Dashboard Card](images/preview.png)
+[![Version](https://img.shields.io/badge/version-v0.6.1-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Validate](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml/badge.svg)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-caps3n-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/caps3n)
 
-Компактная адаптивная карточка Home Assistant для
-[интеграции HealthSync](https://github.com/mannotfood/healthsync). Карточка использует
-штатные сенсоры интеграции и историю Recorder, не требуя сторонних frontend-зависимостей.
+![Демонстрация Health-Sync Dashboard Card](images/preview.png)
 
-> Это независимый проект сообщества, не связанный с автором HealthSync.
+Компактная адаптивная карточка Home Assistant для данных здоровья из
+**HA Companion App для iOS** (Apple Health) и
+**HA Companion App для Android** (Health Connect).
 
 ## Возможности
 
-- Автоматическое обнаружение стандартных сущностей HealthSync
-- Графический редактор Home Assistant и ручная замена любой сущности
-- Быстрый первый показ: поиск сущностей кэшируется, а история Recorder загружается после появления карточки
+- Автоматическое обнаружение сущностей Apple Health и Health Connect из HA Companion App
+- Графический редактор Home Assistant с ручной заменой любой сущности
+- Быстрый первый показ: поиск сущностей кэшируется, история Recorder загружается после появления карточки
 - Независимое включение и выключение каждой плитки показателя
 - Изменяемый порядок плиток: перетаскивание на компьютере и кнопки-стрелки на телефоне
+- Выбор мобильного устройства — для нескольких пользователей на одном дашборде
 - Шаги, активные калории, пульс, HRV и сводка сна
-- Показатели HealthSync 0.20: пульс покоя/ходьбы/восстановления, давление, AFib, SpO₂, дыхание, температура и глюкоза
-- Параметры тела HealthSync 0.20: BMI, процент жира, безжировая масса, рост и обхват талии
-- Время засыпания и пробуждения
+- Датчики HA Companion App: пульс покоя/ходьбы, давление, SpO₂, дыхание, температура, глюкоза
+- Параметры тела: процент жира, безжировая масса, рост, вес
+- Плитки для этажей, тренировок, дистанции ходьбы+бега и VO₂ max
 - Индикатор дневной цели шагов
-- Раздельные шкалы шагов и калорий
-- График пульса за 24 часа прямыми от точки к точке
-- Крупные подсказки со временем получения измерения
-- График фаз сна из атрибутов `deep_minutes`, `core_minutes`, `rem_minutes` и `awake_minutes`
-- Отдельная вкладка тренировок с последней тренировкой и журналом недавних тренировок
-- Автоматическое обнаружение отдельных сущностей тренировок и их иконок из HealthSync `0.11.0`–`0.20.2`
-- Компактный прокручиваемый список недавних тренировок вместо растягивания всей карточки
-- Новые плитки HealthSync `0.12.0`: этажи, упражнения, энергия покоя, дистанция, VO₂ max и вес
-- Переключатель `show_workouts_tab` в графическом редакторе и YAML
+- Раздельные шкалы шагов и калорий на графике активности
+- График пульса за 24 часа с почасовой статистикой и резервом из Recorder
+- График фаз сна из атрибутов `deep_minutes`, `core_minutes`, `rem_minutes`, `awake_minutes`
 - Компактная адаптивная раскладка для Masonry и Sections
-- Русский и английский интерфейс
+- Интерфейс на русском, английском и немецком языках
 
 ## Требования
 
 - Home Assistant с включённой историей Recorder
-- [mannotfood/healthsync](https://github.com/mannotfood/healthsync) после хотя бы одной синхронизации
+- **HA Companion App для iOS** с включёнными сенсорами Apple Health (*Настройки → Companion App → Health*, Labs), синхронизированными хотя бы один раз  
+  **или**  
+  **HA Companion App для Android** с включёнными сенсорами Health Connect (Android 9+ с Play Store или Android 14+), синхронизированными хотя бы один раз
 - HACS для рекомендуемой установки
 
-Полный набор возможностей рассчитан на HealthSync `0.20.2`. Старые сущности,
-включая удалённый в `0.11.0` сенсор `Recent workouts`, остаются совместимыми.
+### Поддержка датчиков по платформе
 
-## Установка через HACS как пользовательский репозиторий
+| Показатель | iOS Companion | Android Health Connect |
+|---|:---:|:---:|
+| Шаги | ✓ | ✓ |
+| Активные калории | ✓ | ✓ |
+| Пульс | ✓ | ✓ |
+| HRV | ✓ | ✓ |
+| Пульс покоя | ✓ | ✓ |
+| Давление | ✓ | ✓ |
+| SpO₂ | ✓ | ✓ |
+| Частота дыхания | ✓ | ✓ |
+| Продолжительность сна | ✓ | ✓ |
+| Дистанция | ✓ | ✓ |
+| Этажи | ✓ | ✓ |
+| VO₂ max | ✓ | ✓ |
+| Вес | ✓ | ✓ |
+| Рост | ✓ | ✓ |
+| Процент жира | ✓ | ✓ |
+| Безжировая масса | ✓ | — |
+| Температура тела | ✓ | ✓ |
+| Глюкоза крови | ✓ | — |
+| Время упражнений | ✓ | — |
+| Пульс при ходьбе | ✓ | — |
+| Энергия покоя | ✓ | ✓ |
 
-[![Открыть репозиторий в Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=BrainDeLook&repository=healthsync-dashboard-card&category=plugin)
+## Установка через HACS
+
+[![Открыть в Home Assistant.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Caps3n&repository=hass-app-health-sync-dashboard-card&category=plugin)
 
 1. Откройте **HACS**.
 2. В меню с тремя точками выберите **Пользовательские репозитории**.
-3. Добавьте `https://github.com/BrainDeLook/healthsync-dashboard-card`.
+3. Добавьте `https://github.com/Caps3n/hass-app-health-sync-dashboard-card`.
 4. Выберите категорию **Dashboard**.
-5. Установите **HealthSync Dashboard Card** и обновите страницу браузера.
+5. Установите **Health-Sync Dashboard Card** и обновите браузер.
 
 ## Добавление карточки
 
-После установки карточка появится в графическом каталоге Home Assistant. Минимальный YAML:
+После установки карточка появится в каталоге. Минимальный YAML:
 
 ```yaml
 type: custom:hass-app-health-sync-dashboard-card
 ```
 
-В графическом редакторе раздел **«Плитки показателей»** объединяет переключатели
-видимости и ручки перетаскивания. Порядок строк сразу определяет порядок плиток на карточке.
-
-Пример настроек:
+Основные параметры:
 
 ```yaml
 type: custom:hass-app-health-sync-dashboard-card
 title: Здоровье
 language: ru
-device_id: 0123456789abcdef0123456789abcdef # необязательно, включает точную историю
 days: 7
 step_goal: 10000
 calorie_goal: 600
 show_activity: true
 show_sleep: true
 show_heart_rate: true
-show_workouts_tab: true
+
+# Необязательно: выбрать конкретное мобильное устройство
+# (для двух пользователей на одном дашборде — выбирается в редакторе)
+# mobile_device: 0123456789abcdef
 
 # Плитки показателей — все включены по умолчанию
 show_steps_metric: true
@@ -85,8 +109,6 @@ show_calories_metric: true
 show_sleep_metric: true
 show_heart_metric: true
 show_hrv_metric: true
-show_sleep_onset_metric: true
-show_sleep_wake_metric: true
 show_flights_metric: true
 show_exercise_metric: true
 show_resting_energy_metric: true
@@ -97,19 +119,15 @@ show_resting_heart_rate_metric: true
 show_blood_pressure_systolic_metric: true
 show_blood_pressure_diastolic_metric: true
 show_walking_heart_rate_metric: true
-show_heart_rate_recovery_metric: true
-show_afib_burden_metric: true
 show_blood_oxygen_metric: true
 show_respiratory_rate_metric: true
 show_body_temperature_metric: true
 show_blood_glucose_metric: true
-show_body_mass_index_metric: true
 show_body_fat_percentage_metric: true
 show_lean_body_mass_metric: true
 show_height_metric: true
-show_waist_circumference_metric: true
 
-# Необязательный порядок; остальные плитки продолжат список в стандартном порядке
+# Необязательный порядок плиток
 tile_order:
   - heart_rate
   - blood_oxygen
@@ -117,89 +135,20 @@ tile_order:
   - active_calories
 ```
 
-Стандартные сущности определяются автоматически. После переименования их можно выбрать
-в графическом редакторе или указать вручную:
+Сущности обнаруживаются автоматически. При необходимости можно указать вручную:
 
 ```yaml
 type: custom:hass-app-health-sync-dashboard-card
 entities:
-  steps: sensor.healthsync_steps_today
-  active_calories: sensor.healthsync_active_calories_today
-  heart_rate: sensor.healthsync_heart_rate
-  heart_rate_variability: sensor.healthsync_heart_rate_variability
-  sleep_duration: sensor.healthsync_sleep_last_night
-  sleep_onset: sensor.healthsync_fell_asleep
-  sleep_wake: sensor.healthsync_woke_up
-  flights_climbed: sensor.healthsync_flights_climbed_today
-  exercise_time: sensor.healthsync_exercise_time_today
-  resting_energy: sensor.healthsync_resting_energy_today
-  distance: sensor.healthsync_walking_running_distance_today
-  vo2_max: sensor.healthsync_vo2_max
-  weight: sensor.healthsync_weight
-  resting_heart_rate: sensor.healthsync_resting_heart_rate
-  blood_pressure_systolic: sensor.healthsync_blood_pressure_systolic
-  blood_pressure_diastolic: sensor.healthsync_blood_pressure_diastolic
-  walking_heart_rate: sensor.healthsync_walking_heart_rate
-  heart_rate_recovery: sensor.healthsync_heart_rate_recovery
-  afib_burden: sensor.healthsync_afib_burden
-  blood_oxygen: sensor.healthsync_blood_oxygen
-  respiratory_rate: sensor.healthsync_respiratory_rate
-  body_temperature: sensor.healthsync_body_temperature
-  blood_glucose: sensor.healthsync_blood_glucose
-  body_mass_index: sensor.healthsync_body_mass_index
-  body_fat_percentage: sensor.healthsync_body_fat_percentage
-  lean_body_mass: sensor.healthsync_lean_body_mass
-  height: sensor.healthsync_height
-  waist_circumference: sensor.healthsync_waist_circumference
-  last_sync: sensor.healthsync_last_sync
-  last_workout_type: sensor.healthsync_workouts_last_workout_type
-  last_workout_duration: sensor.healthsync_workouts_last_workout_duration
-  last_workout_distance: sensor.healthsync_workouts_last_workout_distance
-  last_workout_calories: sensor.healthsync_workouts_last_workout_calories
-  # Необязательная ручная замена одной из новых сущностей тренировок:
-  workout_1: sensor.healthsync_workouts_running_11_08_2026_11_55
+  steps: sensor.my_iphone_steps
+  heart_rate: sensor.my_iphone_heart_rate
 ```
 
-## Тренировки
+## Благодарности
 
-HealthSync `0.11.0+` создаёт до десяти отдельных сущностей недавних тренировок.
-Карточка находит их по атрибутам, отображает иконку конкретного вида активности
-и открывает именно выбранную сущность. Старый атрибут `workouts` поддерживается
-как резервный источник. Event-сущность `Workout completed` остаётся доступной
-для автоматизаций и полной истории в журнале Home Assistant.
-
-## История сна
-
-HealthSync хранит фазы сна в атрибутах `sensor.healthsync_sleep_last_night`.
-Карточка загружает историю Recorder вместе с атрибутами и переводит минуты фаз в часы.
-Глубина истории зависит от настроек хранения Recorder.
-
-## Поддержка HealthSync 0.20.2
-
-Карточка автоматически отображает новые показатели интеграции: пройденные этажи,
-время упражнений, энергию покоя, дистанцию ходьбы и бега, VO₂ max и вес. Для каждой
-новой плитки предусмотрен отдельный переключатель в графическом редакторе.
-
-Начиная с HealthSync `0.11.0`, недавние тренировки представлены отдельными
-сущностями. Карточка автоматически находит до десяти таких сущностей, показывает
-иконку конкретного вида активности и открывает выбранную тренировку. Старый сенсор
-`Recent workouts` по-прежнему поддерживается как резервный вариант.
-
-В HealthSync `0.16.0+` каждое исходное измерение сохраняется в базе интеграции и
-доступно через `healthsync.get_readings`. Выберите устройство HealthSync в редакторе
-карточки (или задайте `device_id` в YAML), чтобы график использовал точные значения и
-время Apple Health. Без явного выбора карточка пытается определить устройство по
-выбранным сущностям. Для старых версий остаются резервные источники: почасовая
-статистика и обычная история Recorder. Значения вне `25–250 bpm` игнорируются.
-Пунктирные продолжения показывают промежутки до первого и после последнего
-доступного измерения и не считаются реальными данными.
-
-## Проверка
-
-```bash
-npm test
-npm run check
-```
+Большое спасибо [BrainDeLook](https://github.com/BrainDeLook) за создание оригинальной
+[HealthSync Dashboard Card](https://github.com/BrainDeLook/healthsync-dashboard-card),
+которая послужила основой для этого проекта.
 
 ## Лицензия
 
