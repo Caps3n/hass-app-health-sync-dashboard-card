@@ -2,6 +2,13 @@
 
 # HealthSync Dashboard Card
 
+[![Version](https://img.shields.io/badge/version-v0.6.1-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
+[![Validate](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml/badge.svg)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-caps3n-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/caps3n)
+
 ![HealthSync Dashboard Card preview](images/preview.png)
 
 A compact, responsive Home Assistant dashboard card for health data from the
