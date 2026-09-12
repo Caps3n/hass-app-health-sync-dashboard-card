@@ -8,6 +8,9 @@ A compact, responsive Home Assistant dashboard card for health data from the
 **Home Assistant iOS Companion App** (Apple Health) and the
 **Home Assistant Android Companion App** (Health Connect).
 
+> Based on the original [HealthSync Dashboard Card](https://github.com/mannotfood/healthsync-dashboard-card) —
+> adapted to work directly with the HA Companion App without any extra integration.
+
 ## Features
 
 - Automatic discovery of HA Companion App Apple Health and Health Connect entities
@@ -62,11 +65,11 @@ A compact, responsive Home Assistant dashboard card for health data from the
 
 ## Install with HACS as a custom repository
 
-[![Open your Home Assistant instance and add this repository to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Caps3n&repository=healthsync-dashboard-card&category=plugin)
+[![Open your Home Assistant instance and add this repository to HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Caps3n&repository=hass-app-health-sync-dashboard-card&category=plugin)
 
 1. Open **HACS** in Home Assistant.
 2. Open the three-dot menu and choose **Custom repositories**.
-3. Add `https://github.com/Caps3n/healthsync-dashboard-card`.
+3. Add `https://github.com/Caps3n/hass-app-health-sync-dashboard-card`.
 4. Select **Dashboard** as the category.
 5. Download **HealthSync Dashboard Card** and refresh the browser.
 
