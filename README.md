@@ -1,6 +1,6 @@
 [Русская версия](README.ru.md)
 
-# HealthSync Dashboard Card
+# Health-Sync Dashboard Card
 
 [![Version](https://img.shields.io/badge/version-v0.6.1-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
@@ -9,7 +9,7 @@
 [![Validate](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml/badge.svg)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/actions/workflows/validate.yml)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-caps3n-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/caps3n)
 
-![HealthSync Dashboard Card preview](images/preview.png)
+![Health-Sync Dashboard Card preview](images/preview.png)
 
 A compact, responsive Home Assistant dashboard card for health data from the
 **Home Assistant iOS Companion App** (Apple Health) and the
@@ -75,11 +75,11 @@ A compact, responsive Home Assistant dashboard card for health data from the
 2. Open the three-dot menu and choose **Custom repositories**.
 3. Add `https://github.com/Caps3n/hass-app-health-sync-dashboard-card`.
 4. Select **Dashboard** as the category.
-5. Download **HealthSync Dashboard Card** and refresh the browser.
+5. Download **Health-Sync Dashboard Card** and refresh the browser.
 
 ## Add the card
 
-The visual card picker lists **HealthSync Dashboard Card** after installation.
+The visual card picker lists **Health-Sync Dashboard Card** after installation.
 Minimal YAML:
 
 ```yaml

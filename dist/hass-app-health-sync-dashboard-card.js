@@ -1180,7 +1180,7 @@ if (!customElements.get("hass-app-health-sync-dashboard-card-editor")) {
 window.customCards = window.customCards || [];
 window.customCards.push({
   type: "hass-app-health-sync-dashboard-card",
-  name: "HealthSync Dashboard Card",
+  name: "Health-Sync Dashboard Card",
   description: "A responsive dashboard card for Apple Health and Android Health Connect via the HA Companion App.",
   preview: true,
   documentationURL: "https://github.com/Caps3n/hass-app-health-sync-dashboard-card",
