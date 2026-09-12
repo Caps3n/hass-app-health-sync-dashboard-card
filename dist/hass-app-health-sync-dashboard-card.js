@@ -819,10 +819,16 @@ class HealthSyncDashboardCard extends HTMLElement {
     const current=points[points.length-1],currentY=top+plotH-(current.v-min)/(max-min)*plotH;
     const hasHistory=points.length>1;
     const measured=points.map((point)=>({x:Math.max(left,Math.min(left+plotW,left+(point.t-start)/(end-start)*plotW)),y:top+plotH-(point.v-min)/(max-min)*plotH}));
-    const tracePoints=hasHistory?measured:[{x:left,y:currentY},{x:left+plotW,y:currentY}];
-    const trace=this._heartTracePath(tracePoints);
     const firstMeasured=measured[0],lastMeasured=measured[measured.length-1];
-    const gaps=hasHistory ? `<path class="heart-gap" d="M ${left},${firstMeasured.y} L ${firstMeasured.x},${firstMeasured.y} M ${lastMeasured.x},${lastMeasured.y} L ${left+plotW},${lastMeasured.y}" fill="none" stroke="var(--hb-red)" stroke-width="2" stroke-dasharray="4 7" opacity=".28"/>` : "";
+    const GAP_MS=30*60*1000;
+    const segments=[],gapBridges=[];
+    let seg=[measured[0]];
+    for(let i=1;i<measured.length;i++){if(points[i].t-points[i-1].t>GAP_MS){segments.push(seg);gapBridges.push({a:seg[seg.length-1],b:measured[i]});seg=[measured[i]];}else{seg.push(measured[i]);}}
+    segments.push(seg);
+    const solidTrace=hasHistory?segments.map((s)=>s.map((m,i)=>`${i?"L":"M"} ${m.x},${m.y}`).join(" ")).join(" "):`M ${left},${currentY} L ${left+plotW},${currentY}`;
+    const trace=solidTrace;
+    const gapBridgePath=gapBridges.map(({a,b})=>`M ${a.x},${a.y} L ${b.x},${b.y}`).join(" ");
+    const gaps=hasHistory ? `<path class="heart-gap" d="M ${left},${firstMeasured.y} L ${firstMeasured.x},${firstMeasured.y} M ${lastMeasured.x},${lastMeasured.y} L ${left+plotW},${lastMeasured.y}${gapBridgePath?" "+gapBridgePath:""}" fill="none" stroke="var(--hb-red)" stroke-width="2" stroke-dasharray="4 7" opacity=".28"/>` : "";
     const centerY=top+plotH/2;
     const historyMarkers=hasHistory?points.slice(0,-1).map((point,index)=>this._heartMarker(point,measured[index].x,measured[index].y,width)).join(""):"";
     const currentX=hasHistory?measured[measured.length-1].x:left+plotW;

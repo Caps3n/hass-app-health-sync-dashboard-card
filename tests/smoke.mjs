@@ -184,10 +184,12 @@ assert.equal(card._expandedChart, "heart");
 assert.equal(interactionRenderCount, 0);
 assert.match(card.shadowRoot.innerHTML, /data-current-only="true"/);
 card._render = interactionRender;
+// Three points close together (within 30 min), then a 2-hour gap, then one more — tests solid + gap rendering
 card._history["sensor.iphone_heart_rate"] = [
   { t: Date.now() - 7200000, v: 84, a: {} },
-  { t: Date.now() - 5400000, v: 0, a: {} },
-  { t: Date.now() - 3600000, v: 100, a: {} },
+  { t: Date.now() - 7000000, v: 0, a: {} },   // invalid — filtered
+  { t: Date.now() - 6900000, v: 88, a: {} },
+  { t: Date.now() - 3600000, v: 100, a: {} },  // 2-hour gap before this point
 ];
 card._render();
 assert.equal(card._isValidHeartRate(0), false);
@@ -197,7 +199,8 @@ assert.doesNotMatch(card.shadowRoot.innerHTML, />0 bpm<\/text>/);
 assert.doesNotMatch(card.shadowRoot.innerHTML, /class="heart-point"/);
 assert.match(card.shadowRoot.innerHTML, /class="chart-hit"/);
 assert.match(card.shadowRoot.innerHTML, /data-interpolation="linear"/);
-assert.match(card.shadowRoot.innerHTML, /class="heart-trace" d="M [^"]+ L [^"]+ L /);
+assert.match(card.shadowRoot.innerHTML, /class="heart-trace" d="M [^"]+ L /);
+assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
 assert.match(card.shadowRoot.innerHTML, /Received:/);
 
 let statisticsRequest;
