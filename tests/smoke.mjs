@@ -95,6 +95,9 @@ assert.deepEqual(entityPanel.schema.map((field) => field.name), [
   "walking_heart_rate", "blood_oxygen",
   "respiratory_rate", "body_temperature", "blood_glucose",
   "body_fat_percentage", "lean_body_mass", "height",
+  "stand_hours", "water", "in_bed",
+  "sleep_deep", "sleep_core", "sleep_rem", "sleep_awake",
+  "move_goal", "exercise_goal", "stand_goal",
 ]);
 const tilePanel = form.schema.find((field) => field.icon === "mdi:view-grid-outline");
 assert.equal(tilePanel, undefined, "draggable metric switches must not be duplicated in ha-form");
@@ -347,6 +350,56 @@ Card.discoverEntities = originalDiscoverEntities;
   // a plain match still wins over a suffixed one
   const both = Card.discoverEntities({ states: { ...suffixed, "sensor.phone_heart_rate": { state: "70", last_updated: ts, attributes: {} } } });
   assert.equal(both.heart_rate, "sensor.phone_heart_rate");
+}
+
+// Newer iOS Companion App sensors: stand hours, water, goals, separate sleep stages, floors fallback
+{
+  const ts = new Date().toISOString();
+  const st = (state, unit) => ({ state, last_updated: ts, attributes: unit ? { unit_of_measurement: unit } : {} });
+  const states = {
+    "sensor.boiler_water": st("55", "°C"),
+    "sensor.p_active_energy_2": st("159", "kcal"),
+    "sensor.p_move_goal": st("300", "kcal"),
+    "sensor.p_exercise_time_2": st("12", "min"),
+    "sensor.p_exercise_goal": st("30", "min"),
+    "sensor.p_stand_hours": st("2", "hours"),
+    "sensor.p_stand_goal": st("12", "hours"),
+    "sensor.p_water_2": st("750", "mL"),
+    "sensor.p_in_bed_2": st("407", "min"),
+    "sensor.p_deep_sleep_2": st("28", "min"),
+    "sensor.p_core_sleep_2": st("292", "min"),
+    "sensor.p_rem_sleep_2": st("79", "min"),
+    "sensor.p_awake_2": st("8", "min"),
+    "sensor.p_sleep_duration_2": st("398", "min"),
+    "sensor.p_flights_climbed_2": st("unavailable", "floors"),
+    "sensor.p_floors_ascended_2": st("0", "floors"),
+  };
+  const found = Card.discoverEntities({ states });
+  assert.equal(found.water, "sensor.p_water_2", "water needs a volume unit, so the boiler is skipped");
+  assert.equal(found.stand_hours, "sensor.p_stand_hours");
+  assert.equal(found.move_goal, "sensor.p_move_goal");
+  assert.equal(found.in_bed, "sensor.p_in_bed_2");
+  assert.equal(found.sleep_deep, "sensor.p_deep_sleep_2");
+  assert.equal(found.sleep_awake, "sensor.p_awake_2");
+  assert.equal(found.flights_climbed, "sensor.p_floors_ascended_2", "a live sensor beats an unavailable one");
+
+  const card = new Card();
+  card.setConfig({ entities: {} });
+  card._hass = { states, language: "de" };
+  card._detectedEntities = found;
+  assert.match(card._metric("active_calories", "x", "mdi:fire", "orange"), /\/ 300/);
+  assert.match(card._metric("stand_hours", "x", "mdi:human-handsup", "green"), /\/ 12/);
+  assert.equal(card._goalSuffix("steps"), "");
+
+  const yesterday = Date.now() - 86400000;
+  card._history = {
+    "sensor.p_deep_sleep_2": [{ t: yesterday, v: 60, a: {} }],
+    "sensor.p_core_sleep_2": [{ t: yesterday, v: 240, a: {} }],
+    "sensor.p_sleep_duration_2": [{ t: yesterday, v: 398, a: {} }],
+  };
+  const deep = card._dailySleepStage("deep_minutes");
+  assert.ok(deep.some((item) => item.has && item.value === 1), "deep sleep falls back to the separate stage sensor");
+  assert.ok(card._dailySleepStage("core_minutes").some((item) => item.has && item.value === 4));
 }
 
 console.log("Smoke test passed");

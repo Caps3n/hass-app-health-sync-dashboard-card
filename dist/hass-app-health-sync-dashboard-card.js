@@ -1,9 +1,9 @@
-/* Health-Sync Dashboard Card v0.6.6
+/* Health-Sync Dashboard Card v0.7.0
  * A dependency-free Lovelace card for the HA Companion App (Apple Health / Health Connect).
  * MIT License
  */
 
-const HS_VERSION = "0.6.6";
+const HS_VERSION = "0.7.0";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
@@ -12,6 +12,9 @@ const HS_METRICS = [
   "walking_heart_rate", "blood_oxygen",
   "respiratory_rate", "body_temperature", "blood_glucose",
   "body_fat_percentage", "lean_body_mass", "height",
+  "stand_hours", "water", "in_bed",
+  "sleep_deep", "sleep_core", "sleep_rem", "sleep_awake",
+  "move_goal", "exercise_goal", "stand_goal",
 ];
 
 const HS_ENTITY_CANDIDATES = {
@@ -37,6 +40,16 @@ const HS_ENTITY_CANDIDATES = {
   body_fat_percentage: [],
   lean_body_mass: [],
   height: [],
+  stand_hours: [],
+  water: [],
+  in_bed: [],
+  sleep_deep: [],
+  sleep_core: [],
+  sleep_rem: [],
+  sleep_awake: [],
+  move_goal: [],
+  exercise_goal: [],
+  stand_goal: [],
 };
 
 const HS_ENTITY_SUFFIXES = {
@@ -45,7 +58,7 @@ const HS_ENTITY_SUFFIXES = {
   heart_rate: ["heart_rate"],
   heart_rate_variability: ["heart_rate_variability"],
   sleep_duration: ["sleep_last_night", "sleep_duration"],
-  flights_climbed: ["flights_climbed_today", "flights_climbed", "health_connect_daily_floors"],
+  flights_climbed: ["flights_climbed_today", "flights_climbed", "health_connect_daily_floors", "floors_ascended"],
   exercise_time: ["exercise_time_today", "exercise_time"],
   resting_energy: ["resting_energy_today", "resting_energy", "health_connect_total_calories_burned"],
   distance: ["walking_running_distance_today", "distance_walking_running_today", "walking_running_distance", "health_connect_daily_distance"],
@@ -62,6 +75,31 @@ const HS_ENTITY_SUFFIXES = {
   body_fat_percentage: ["body_fat_percentage", "health_connect_body_fat"],
   lean_body_mass: ["lean_body_mass"],
   height: ["height"],
+  stand_hours: ["stand_hours"],
+  water: ["water", "health_connect_hydration"],
+  in_bed: ["in_bed"],
+  sleep_deep: ["deep_sleep"],
+  sleep_core: ["core_sleep"],
+  sleep_rem: ["rem_sleep"],
+  sleep_awake: ["awake"],
+  move_goal: ["move_goal"],
+  exercise_goal: ["exercise_goal"],
+  stand_goal: ["stand_goal"],
+};
+
+// Generic suffixes need a matching unit so unrelated sensors (e.g. a boiler's "water") are not picked up.
+const HS_ENTITY_UNITS = {
+  water: ["ml", "l", "fl. oz", "fl oz", "floz"],
+  in_bed: ["min", "h"],
+  sleep_awake: ["min", "h"],
+};
+
+// Apple Health goal sensors shown next to the matching tile value ("159 / 300 kcal").
+const HS_TILE_GOALS = { active_calories: "move_goal", exercise_time: "exercise_goal", stand_hours: "stand_goal" };
+
+// Separate sleep-stage sensors (newer iOS Companion App) used when sleep_duration has no stage attributes.
+const HS_SLEEP_STAGE_METRICS = {
+  deep_minutes: "sleep_deep", core_minutes: "sleep_core", rem_minutes: "sleep_rem", awake_minutes: "sleep_awake",
 };
 
 const HS_EXTRA_TILES = [
@@ -76,6 +114,9 @@ const HS_EXTRA_TILES = [
   ["body_fat_percentage", "show_body_fat_percentage_metric", "bodyFatPercentage", "mdi:percent", "indigo"],
   ["lean_body_mass", "show_lean_body_mass_metric", "leanBodyMass", "mdi:scale-bathroom", "indigo"],
   ["height", "show_height_metric", "height", "mdi:human-male-height", "green"],
+  ["stand_hours", "show_stand_hours_metric", "standHours", "mdi:human-handsup", "green"],
+  ["water", "show_water_metric", "water", "mdi:cup-water", "cyan"],
+  ["in_bed", "show_in_bed_metric", "inBed", "mdi:bed", "indigo"],
 ];
 
 const HS_TILE_DEFINITIONS = [
@@ -107,7 +148,7 @@ const HS_TRANSLATIONS = {
     bloodOxygen: "Blood oxygen",
     respiratoryRate: "Respiratory rate", bodyTemperature: "Body temperature", bloodGlucose: "Blood glucose",
     bodyFatPercentage: "Body fat", leanBodyMass: "Lean body mass",
-    height: "Height",
+    height: "Height", standHours: "Stand hours", water: "Water", inBed: "In bed",
     deep: "Deep", core: "Core", rem: "REM", awake: "Awake", unspecified: "Unspecified",
     heartRate: "Heart rate", hrv: "HRV", today: "Today",
     switchChart: "Switch chart",
@@ -127,7 +168,7 @@ const HS_TRANSLATIONS = {
     bloodOxygen: "Blutsauerstoff",
     respiratoryRate: "Atemfrequenz", bodyTemperature: "Körpertemperatur", bloodGlucose: "Blutzucker",
     bodyFatPercentage: "Körperfett", leanBodyMass: "Magermasse",
-    height: "Größe",
+    height: "Größe", standHours: "Stehstunden", water: "Wasser", inBed: "Im Bett",
     deep: "Tief", core: "Kern", rem: "REM", awake: "Wach", unspecified: "Unbekannt",
     heartRate: "Herzfrequenz", hrv: "HRV", today: "Heute",
     switchChart: "Diagramm wechseln",
@@ -143,7 +184,7 @@ const HS_TRANSLATIONS = {
     bloodOxygen: "Кислород в крови",
     respiratoryRate: "Частота дыхания", bodyTemperature: "Температура тела", bloodGlucose: "Глюкоза крови",
     bodyFatPercentage: "Жировая масса", leanBodyMass: "Безжировая масса",
-    height: "Рост",
+    height: "Рост", standHours: "Часы с разминкой", water: "Вода", inBed: "В постели",
     title: "Здоровье",
     noData: "Датчики здоровья не найдены",
     noDataHint: "Включите датчики здоровья в настройках HA Companion App или выберите сущности в конфигурации карточки.",
@@ -175,6 +216,7 @@ const HS_EDITOR_LABELS = {
     show_body_temperature_metric: "Körpertemperatur", show_blood_glucose_metric: "Blutzucker",
     show_body_fat_percentage_metric: "Körperfettanteil",
     show_lean_body_mass_metric: "Magermasse", show_height_metric: "Größe",
+    show_stand_hours_metric: "Stehstunden", show_water_metric: "Wasser", show_in_bed_metric: "Im Bett",
     steps: "Schritte", active_calories: "Aktive Kalorien",
     sleep_duration: "Schlaf letzte Nacht",
     heart_rate: "Herzfrequenz", heart_rate_variability: "Herzfrequenzvariabilität",
@@ -187,6 +229,9 @@ const HS_EDITOR_LABELS = {
     respiratory_rate: "Atemfrequenz", body_temperature: "Körpertemperatur", blood_glucose: "Blutzucker",
     body_fat_percentage: "Körperfettanteil",
     lean_body_mass: "Magermasse", height: "Größe",
+    stand_hours: "Stehstunden heute", water: "Wasser heute", in_bed: "Im Bett letzte Nacht",
+    sleep_deep: "Tiefschlaf", sleep_core: "Kernschlaf", sleep_rem: "REM-Schlaf", sleep_awake: "Wachphasen",
+    move_goal: "Bewegungsziel", exercise_goal: "Trainingsziel", stand_goal: "Stehziel",
   },
   en: {
     mobile_device: "Mobile device",
@@ -205,6 +250,7 @@ const HS_EDITOR_LABELS = {
     show_body_temperature_metric: "Body temperature", show_blood_glucose_metric: "Blood glucose",
     show_body_fat_percentage_metric: "Body fat percentage",
     show_lean_body_mass_metric: "Lean body mass", show_height_metric: "Height",
+    show_stand_hours_metric: "Stand hours", show_water_metric: "Water", show_in_bed_metric: "In bed",
     steps: "Steps", active_calories: "Active calories",
     sleep_duration: "Sleep last night",
     heart_rate: "Heart rate", heart_rate_variability: "Heart-rate variability",
@@ -217,6 +263,9 @@ const HS_EDITOR_LABELS = {
     respiratory_rate: "Respiratory rate", body_temperature: "Body temperature", blood_glucose: "Blood glucose",
     body_fat_percentage: "Body fat percentage",
     lean_body_mass: "Lean body mass", height: "Height",
+    stand_hours: "Stand hours today", water: "Water today", in_bed: "In bed last night",
+    sleep_deep: "Deep sleep", sleep_core: "Core sleep", sleep_rem: "REM sleep", sleep_awake: "Awake",
+    move_goal: "Move goal", exercise_goal: "Exercise goal", stand_goal: "Stand goal",
   },
   ru: {
     show_flights_metric: "Этажи", show_exercise_metric: "Время упражнений",
@@ -228,6 +277,7 @@ const HS_EDITOR_LABELS = {
     show_body_temperature_metric: "Температура тела", show_blood_glucose_metric: "Глюкоза крови",
     show_body_fat_percentage_metric: "Процент жира",
     show_lean_body_mass_metric: "Безжировая масса", show_height_metric: "Рост",
+    show_stand_hours_metric: "Часы с разминкой", show_water_metric: "Вода", show_in_bed_metric: "В постели",
     flights_climbed: "Этажи за сегодня", exercise_time: "Упражнения за сегодня",
     resting_energy: "Энергия покоя за сегодня", distance: "Дистанция ходьбы и бега",
     vo2_max: "VO₂ max", weight: "Вес",
@@ -237,6 +287,9 @@ const HS_EDITOR_LABELS = {
     respiratory_rate: "Частота дыхания", body_temperature: "Температура тела", blood_glucose: "Глюкоза крови",
     body_fat_percentage: "Процент жира",
     lean_body_mass: "Безжировая масса", height: "Рост",
+    stand_hours: "Часы с разминкой за сегодня", water: "Вода за сегодня", in_bed: "В постели прошлой ночью",
+    sleep_deep: "Глубокий сон", sleep_core: "Основной сон", sleep_rem: "REM-сон", sleep_awake: "Бодрствование",
+    move_goal: "Цель подвижности", exercise_goal: "Цель упражнений", stand_goal: "Цель разминки",
     mobile_device: "Мобильное устройство",
     title: "Заголовок", language: "Язык",
     days: "Период истории", step_goal: "Дневная цель шагов", calorie_goal: "Дневная цель активных калорий",
@@ -381,8 +434,13 @@ class HealthSyncDashboardCard extends HTMLElement {
         && !otherSuffixes.some((longer) => longer.length > suffix.length && longer.endsWith(`_${suffix}`) && ends(objectId, longer)));
       // Prefer the plain entity ID; otherwise accept HA's collision suffix (e.g. sensor.phone_heart_rate_2),
       // which appears when the Companion App re-registers its sensors.
-      const match = sensorIds.find((entityId) => matches(entityId.slice(7)))
-        || sensorIds.find((entityId) => /_\d+$/.test(entityId) && matches(entityId.slice(7).replace(/_\d+$/, "")));
+      const units = HS_ENTITY_UNITS[metric];
+      const unitOk = (entityId) => !units || units.includes(String(states[entityId]?.attributes?.unit_of_measurement || "").toLowerCase());
+      const plain = sensorIds.filter((entityId) => unitOk(entityId) && matches(entityId.slice(7)));
+      const suffixed = sensorIds.filter((entityId) => unitOk(entityId) && /_\d+$/.test(entityId) && matches(entityId.slice(7).replace(/_\d+$/, "")));
+      // Prefer a sensor that currently has a value (e.g. floors_ascended when flights_climbed is unavailable).
+      const live = (entityId) => !["unavailable", "unknown"].includes(states[entityId]?.state);
+      const match = plain.find(live) || suffixed.find(live) || plain[0] || suffixed[0];
       if (match) entities[metric] = match;
     }
     return entities;
@@ -540,12 +598,20 @@ class HealthSyncDashboardCard extends HTMLElement {
     return `${formatted}${unit ? ` <small>${this._escape(unit)}</small>` : ""}`;
   }
 
+  _goalSuffix(metric) {
+    const goalMetric = HS_TILE_GOALS[metric];
+    if (!goalMetric || this._numeric(metric) === null) return "";
+    const goal = this._numeric(goalMetric);
+    if (!goal || goal <= 0) return "";
+    return ` <small>/ ${new Intl.NumberFormat(this._lang(), { maximumFractionDigits: 0 }).format(goal)}</small>`;
+  }
+
   _metric(metric, label, icon, tone) {
     const entity = this._entity(metric);
     if (!entity) return "";
     return `<button class="metric ${tone}" data-entity="${this._escape(entity)}" aria-label="${this._escape(label)}">
       <span class="metric-icon"><ha-icon icon="${icon}"></ha-icon></span>
-      <span class="metric-copy"><span class="metric-value">${this._format(metric)}</span><span class="metric-label">${this._escape(label)}</span></span>
+      <span class="metric-copy"><span class="metric-value">${this._format(metric)}${this._goalSuffix(metric)}</span><span class="metric-label">${this._escape(label)}</span></span>
     </button>`;
   }
 
@@ -793,6 +859,16 @@ class HealthSyncDashboardCard extends HTMLElement {
       const item = index.get(key);
       if (item) { item.value = minutes / 60; item.t = point.t; item.has = true; }
     }
+    const stageMetric = HS_SLEEP_STAGE_METRICS[attribute];
+    if (stageMetric && this._entity(stageMetric) && !result.some((item) => item.has)) {
+      const hours = this._state(stageMetric)?.attributes?.unit_of_measurement === "h";
+      for (const point of this._historyPoints(stageMetric)) {
+        const date = new Date(point.t);
+        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        const item = index.get(key);
+        if (item && Number.isFinite(point.v)) { item.value = hours ? point.v : point.v / 60; item.t = point.t; item.has = true; }
+      }
+    }
     return result;
   }
 
@@ -918,7 +994,7 @@ class HealthSyncDashboardCard extends HTMLElement {
 
   _scheduleHistory() {
     if (!this._hass || !this.config || this._loadingHistory) return;
-    const metrics=["steps","active_calories","sleep_duration","heart_rate"];
+    const metrics=["steps","active_calories","sleep_duration","heart_rate",...Object.values(HS_SLEEP_STAGE_METRICS)];
     const entities=[...new Set(metrics.map((m)=>this._entity(m)).filter(Boolean))];
     if (!entities.length) return;
     const key=`${entities.join(",")}|${this.config.days}`;

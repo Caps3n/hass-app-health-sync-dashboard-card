@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.6-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.7.0-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -30,7 +30,8 @@
 - Индикатор дневной цели шагов
 - Раздельные шкалы шагов и калорий на графике активности
 - График пульса за 24 часа с почасовой статистикой и резервом из Recorder
-- График фаз сна из атрибутов `deep_minutes`, `core_minutes`, `rem_minutes`, `awake_minutes`
+- График фаз сна из атрибутов `deep_minutes`, `core_minutes`, `rem_minutes`, `awake_minutes` или из отдельных датчиков *Deep / Core / REM Sleep* и *Awake* новых версий Companion App
+- Плитки для часов с разминкой, воды и времени в постели; активные калории, упражнения и разминка показывают цель Apple Health (например, `159 / 300 kcal`), если есть датчики целей
 - Компактная адаптивная раскладка для Masonry и Sections
 - Интерфейс на русском, английском и немецком языках
 
@@ -126,6 +127,9 @@ show_blood_glucose_metric: true
 show_body_fat_percentage_metric: true
 show_lean_body_mass_metric: true
 show_height_metric: true
+show_stand_hours_metric: true
+show_water_metric: true
+show_in_bed_metric: true
 
 # Необязательный порядок плиток
 tile_order:
@@ -151,9 +155,11 @@ entities:
   (например, сопряжённые часы). Так у каждого человека может быть своя карточка.
 - Если Companion App заново регистрирует датчики, Home Assistant добавляет к ID
   число, например `sensor.my_iphone_heart_rate_2`. Это может произойти, например, после
-  обновления до Home Assistant 2026.11. Начиная с v0.6.6 карточка находит такие
+  обновления до Home Assistant 2026.11. Начиная с v0.7.0 карточка находит такие
   датчики автоматически; датчик без числа по-прежнему в приоритете.
 - Пульс в покое и при ходьбе никогда не используется как основной пульс.
+- Датчик с текущим значением предпочтительнее недоступного, например *Floors Ascended*
+  используется для этажей, если *Flights Climbed* недоступен.
 
 **Устранение неполадок:** если карточка пишет, что датчики не найдены, выполните в
 *Инструменты разработчика → Шаблон*

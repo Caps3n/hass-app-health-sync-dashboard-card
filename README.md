@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.6-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.7.0-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -26,10 +26,11 @@ A compact, responsive Home Assistant dashboard card for health data from the
 - HA Companion App sensors: resting/walking heart rate, blood pressure, SpO₂, respiratory rate, body temperature, blood glucose
 - HA Companion App body metrics: body fat, lean body mass, height, weight
 - Tiles for flights climbed, exercise time, walking/running distance and VO₂ max
+- Tiles for stand hours, water and time in bed; active calories, exercise time and stand hours show your Apple Health goal (e.g. `159 / 300 kcal`) when the goal sensors exist
 - Step-goal progress bar
 - Independent step and calorie scales in the activity chart
 - Point-to-point 24-hour heart-rate chart with hourly statistics and Recorder fallbacks
-- Sleep-stage chart built from `deep_minutes`, `core_minutes`, `rem_minutes` and `awake_minutes`
+- Sleep-stage chart built from `deep_minutes`, `core_minutes`, `rem_minutes` and `awake_minutes`, or from the separate *Deep / Core / REM Sleep* and *Awake* sensors of newer Companion App versions
 - Compact responsive layout for Masonry and Sections dashboards
 - English, German and Russian interface
 
@@ -125,6 +126,9 @@ show_blood_glucose_metric: true
 show_body_fat_percentage_metric: true
 show_lean_body_mass_metric: true
 show_height_metric: true
+show_stand_hours_metric: true
+show_water_metric: true
+show_in_bed_metric: true
 
 # Optional custom order; omitted metrics follow in their default order
 tile_order:
@@ -162,6 +166,16 @@ entities:
   body_fat_percentage: sensor.body_fat_percentage
   lean_body_mass: sensor.lean_body_mass
   height: sensor.height
+  stand_hours: sensor.stand_hours
+  water: sensor.water
+  in_bed: sensor.in_bed
+  sleep_deep: sensor.deep_sleep
+  sleep_core: sensor.core_sleep
+  sleep_rem: sensor.rem_sleep
+  sleep_awake: sensor.awake
+  move_goal: sensor.move_goal
+  exercise_goal: sensor.exercise_goal
+  stand_goal: sensor.stand_goal
 ```
 
 ## Automatic entity discovery
@@ -171,9 +185,11 @@ entities:
   watch) are included too, so two people can each have their own card.
 - If the Companion App re-registers its sensors, Home Assistant adds a numeric
   suffix such as `sensor.my_iphone_heart_rate_2`. This can happen, for example,
-  after updating to Home Assistant 2026.11. Since v0.6.6 the card finds these
+  after updating to Home Assistant 2026.11. Since v0.7.0 the card finds these
   sensors automatically; a sensor without the suffix is still preferred.
 - Resting and walking heart rate are never picked up as the main heart rate.
+- A sensor that currently has a value is preferred over an unavailable one, e.g.
+  *Floors Ascended* is used for flights climbed when *Flights Climbed* is unavailable.
 
 **Troubleshooting:** if the card shows *No health sensors found*, open
 *Developer tools → Template* and run
