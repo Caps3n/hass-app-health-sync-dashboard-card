@@ -1,9 +1,9 @@
-/* Health-Sync Dashboard Card v0.7.0
+/* Health-Sync Dashboard Card v0.7.1
  * A dependency-free Lovelace card for the HA Companion App (Apple Health / Health Connect).
  * MIT License
  */
 
-const HS_VERSION = "0.7.0";
+const HS_VERSION = "0.7.1";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
@@ -937,23 +937,17 @@ class HealthSyncDashboardCard extends HTMLElement {
     const current=points[points.length-1],currentY=top+plotH-(current.v-min)/(max-min)*plotH;
     const hasHistory=points.length>1;
     const measured=points.map((point)=>({x:Math.max(left,Math.min(left+plotW,left+(point.t-start)/(end-start)*plotW)),y:top+plotH-(point.v-min)/(max-min)*plotH}));
+    // One continuous solid line through every reading, from the left edge to the right edge.
     const firstMeasured=measured[0],lastMeasured=measured[measured.length-1];
-    const GAP_MS=30*60*1000;
-    const segments=[],gapBridges=[];
-    let seg=[measured[0]];
-    for(let i=1;i<measured.length;i++){if(points[i].t-points[i-1].t>GAP_MS){segments.push(seg);gapBridges.push({a:seg[seg.length-1],b:measured[i]});seg=[measured[i]];}else{seg.push(measured[i]);}}
-    segments.push(seg);
-    const solidTrace=hasHistory?segments.map((s)=>s.map((m,i)=>`${i?"L":"M"} ${m.x},${m.y}`).join(" ")).join(" "):`M ${left},${currentY} L ${left+plotW},${currentY}`;
-    const trace=solidTrace;
-    const gapBridgePath=gapBridges.map(({a,b})=>`M ${a.x},${a.y} L ${b.x},${b.y}`).join(" ");
-    const gaps=hasHistory ? `<path class="heart-gap" d="M ${left},${firstMeasured.y} L ${firstMeasured.x},${firstMeasured.y} M ${lastMeasured.x},${lastMeasured.y} L ${left+plotW},${lastMeasured.y}${gapBridgePath?" "+gapBridgePath:""}" fill="none" stroke="var(--hb-red)" stroke-width="2" stroke-dasharray="4 7" opacity=".28"/>` : "";
-    const centerY=top+plotH/2;
+    const trace=hasHistory
+      ? `M ${left},${firstMeasured.y} ${measured.map((m)=>`L ${m.x},${m.y}`).join(" ")} L ${left+plotW},${lastMeasured.y}`
+      : `M ${left},${currentY} L ${left+plotW},${currentY}`;
     const historyMarkers=hasHistory?points.slice(0,-1).map((point,index)=>this._heartMarker(point,measured[index].x,measured[index].y,width)).join(""):"";
     const currentX=hasHistory?measured[measured.length-1].x:left+plotW;
     const currentMarker=`${this._heartMarker(current,currentX,currentY,width)}<text class="axis" x="${currentX-8}" y="${Math.max(top+10,currentY-9)}" text-anchor="end" style="fill:var(--hb-red)">${current.v.toFixed(0)} bpm</text>`;
     const legend = `<span class="legend"><span><i style="--dot:var(--hb-red)"></i>bpm</span></span>`;
     const timeLabels=[0,.25,.5,.75,1].map((ratio)=>{const date=new Date(start+(end-start)*ratio);const label=new Intl.DateTimeFormat(this._lang(),{hour:"2-digit",minute:"2-digit"}).format(date);return `<text class="axis" x="${left+plotW*ratio}" y="${height-6}" text-anchor="${ratio===0?"start":ratio===1?"end":"middle"}">${this._escape(label)}</text>`;}).join("");
-    const svg = `<svg viewBox="0 0 ${width} ${height}" role="img" data-current-only="${!hasHistory}" data-interpolation="linear" data-statistics="${Boolean(this._statistics[this._entity("heart_rate")]?.length)}">${this._grid(width,height,left,right,top,bottom,max,min)}<line class="heart-center" x1="${left}" x2="${left+plotW}" y1="${centerY}" y2="${centerY}" stroke="var(--secondary-text-color)" stroke-width="1.5" stroke-dasharray="5 7" opacity=".5"/>${gaps}<path class="heart-trace" d="${trace}" fill="none" stroke="var(--hb-red)" stroke-width="3"${hasHistory?"":` stroke-dasharray="10 7"`} stroke-linejoin="round" stroke-linecap="round"/>${historyMarkers}${currentMarker}${timeLabels}</svg>`;
+    const svg = `<svg viewBox="0 0 ${width} ${height}" role="img" data-current-only="${!hasHistory}" data-interpolation="linear" data-statistics="${Boolean(this._statistics[this._entity("heart_rate")]?.length)}">${this._grid(width,height,left,right,top,bottom,max,min)}<path class="heart-trace" d="${trace}" fill="none" stroke="var(--hb-red)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>${historyMarkers}${currentMarker}${timeLabels}</svg>`;
     return this._collapsibleChart("heart", this._t("heart"), legend, svg, true);
   }
 
