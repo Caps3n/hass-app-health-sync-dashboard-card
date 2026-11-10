@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.5-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.6.6-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -143,6 +143,22 @@ entities:
   steps: sensor.my_iphone_steps
   heart_rate: sensor.my_iphone_heart_rate
 ```
+
+## Автоматическое обнаружение сущностей
+
+- Если задан **`mobile_device`** (поле *Устройство* в редакторе), используются
+  только датчики этого телефона, включая связанные с ним дочерние устройства
+  (например, сопряжённые часы). Так у каждого человека может быть своя карточка.
+- Если Companion App заново регистрирует датчики, Home Assistant добавляет к ID
+  число, например `sensor.my_iphone_heart_rate_2`. Это может произойти, например, после
+  обновления до Home Assistant 2026.11. Начиная с v0.6.6 карточка находит такие
+  датчики автоматически; датчик без числа по-прежнему в приоритете.
+- Пульс в покое и при ходьбе никогда не используется как основной пульс.
+
+**Устранение неполадок:** если карточка пишет, что датчики не найдены, выполните в
+*Инструменты разработчика → Шаблон*
+`{{ device_entities('<ID устройства>') | select('match', 'sensor.') | list }}`
+с ID `mobile_device` из YAML карточки. Любой датчик можно указать вручную в `entities`.
 
 ## Благодарности
 

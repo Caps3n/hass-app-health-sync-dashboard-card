@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.5-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.6.6-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -163,6 +163,23 @@ entities:
   lean_body_mass: sensor.lean_body_mass
   height: sensor.height
 ```
+
+## Automatic entity discovery
+
+- With **`mobile_device`** set (the *Device* field in the editor), only sensors of
+  that phone are used. Sensors on devices linked below it (for example a paired
+  watch) are included too, so two people can each have their own card.
+- If the Companion App re-registers its sensors, Home Assistant adds a numeric
+  suffix such as `sensor.my_iphone_heart_rate_2`. This can happen, for example,
+  after updating to Home Assistant 2026.11. Since v0.6.6 the card finds these
+  sensors automatically; a sensor without the suffix is still preferred.
+- Resting and walking heart rate are never picked up as the main heart rate.
+
+**Troubleshooting:** if the card shows *No health sensors found*, open
+*Developer tools → Template* and run
+`{{ device_entities('<device id>') | select('match', 'sensor.') | list }}`
+with the `mobile_device` ID from the card's YAML to see which sensors that device
+has. Any sensor can also be set manually under `entities`.
 
 ## Heart-rate history
 

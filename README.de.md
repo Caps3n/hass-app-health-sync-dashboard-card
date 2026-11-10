@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.5-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.6.6-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -143,6 +143,23 @@ entities:
   steps: sensor.mein_iphone_schritte
   heart_rate: sensor.mein_iphone_herzfrequenz
 ```
+
+## Automatische Erkennung der Entitäten
+
+- Ist **`mobile_device`** gesetzt (Feld *Gerät* im Editor), nutzt die Karte nur
+  Sensoren dieses Handys. Sensoren an damit verknüpften Untergeräten (z. B. einer
+  gekoppelten Uhr) werden mitgenommen. So kann jede Person ihre eigene Karte haben.
+- Legt die Companion-App ihre Sensoren neu an, hängt Home Assistant eine Zahl an,
+  z. B. `sensor.mein_iphone_heart_rate_2`. Das kann z. B. nach dem Update auf
+  Home Assistant 2026.11 passieren. Ab v0.6.6 findet die Karte diese Sensoren
+  automatisch; ein Sensor ohne Zahl wird weiterhin bevorzugt.
+- Ruhe- und Geh-Herzfrequenz werden nie als normale Herzfrequenz verwendet.
+
+**Fehlersuche:** Zeigt die Karte *Keine Gesundheitssensoren gefunden*, unter
+*Entwicklerwerkzeuge → Template*
+`{{ device_entities('<Geräte-ID>') | select('match', 'sensor.') | list }}`
+mit der `mobile_device`-ID aus dem YAML der Karte ausführen. Dann siehst du, welche
+Sensoren das Gerät hat. Jeder Sensor kann auch manuell unter `entities` gesetzt werden.
 
 ## Danksagung
 
