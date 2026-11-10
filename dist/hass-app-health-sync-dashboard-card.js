@@ -603,7 +603,16 @@ class HealthSyncDashboardCard extends HTMLElement {
     if (!goalMetric || this._numeric(metric) === null) return "";
     const goal = this._numeric(goalMetric);
     if (!goal || goal <= 0) return "";
-    return ` <small>/ ${new Intl.NumberFormat(this._lang(), { maximumFractionDigits: 0 }).format(goal)}</small>`;
+    return ` / ${new Intl.NumberFormat(this._lang(), { maximumFractionDigits: 0 }).format(goal)}`;
+  }
+
+  // "159 / 300 kcal": the goal goes between the value and its unit.
+  _formatWithGoal(metric) {
+    const value = this._format(metric);
+    const goal = this._goalSuffix(metric);
+    if (!goal) return value;
+    const unitAt = value.indexOf(" <small>");
+    return unitAt < 0 ? `${value}${goal}` : `${value.slice(0, unitAt)}${goal}${value.slice(unitAt)}`;
   }
 
   _metric(metric, label, icon, tone) {
@@ -611,7 +620,7 @@ class HealthSyncDashboardCard extends HTMLElement {
     if (!entity) return "";
     return `<button class="metric ${tone}" data-entity="${this._escape(entity)}" aria-label="${this._escape(label)}">
       <span class="metric-icon"><ha-icon icon="${icon}"></ha-icon></span>
-      <span class="metric-copy"><span class="metric-value">${this._format(metric)}${this._goalSuffix(metric)}</span><span class="metric-label">${this._escape(label)}</span></span>
+      <span class="metric-copy"><span class="metric-value">${this._formatWithGoal(metric)}</span><span class="metric-label">${this._escape(label)}</span></span>
     </button>`;
   }
 

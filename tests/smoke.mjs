@@ -387,7 +387,7 @@ Card.discoverEntities = originalDiscoverEntities;
   card.setConfig({ entities: {} });
   card._hass = { states, language: "de" };
   card._detectedEntities = found;
-  assert.match(card._metric("active_calories", "x", "mdi:fire", "orange"), /\/ 300/);
+  assert.match(card._metric("active_calories", "x", "mdi:fire", "orange"), /159 \/ 300 <small>kcal<\/small>/);
   assert.match(card._metric("stand_hours", "x", "mdi:human-handsup", "green"), /\/ 12/);
   assert.equal(card._goalSuffix("steps"), "");
 
