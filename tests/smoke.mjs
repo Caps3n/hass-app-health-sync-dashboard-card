@@ -203,7 +203,7 @@ assert.doesNotMatch(card.shadowRoot.innerHTML, /class="heart-point"/);
 assert.match(card.shadowRoot.innerHTML, /class="chart-hit"/);
 assert.match(card.shadowRoot.innerHTML, /data-interpolation="linear"/);
 assert.match(card.shadowRoot.innerHTML, /class="heart-trace" d="M [^"]+ L /);
-assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
+assert.doesNotMatch(card.shadowRoot.innerHTML, /heart-gap|heart-center|stroke-dasharray/, "heart chart is one solid line");
 assert.match(card.shadowRoot.innerHTML, /Received:/);
 
 let statisticsRequest;
@@ -219,7 +219,7 @@ assert.equal(statisticsRequest.type, "recorder/statistics_during_period");
 assert.deepEqual(statisticsRequest.types, ["mean", "min", "max"]);
 card._render();
 assert.match(card.shadowRoot.innerHTML, /data-statistics="true"/);
-assert.match(card.shadowRoot.innerHTML, /class="heart-gap"/);
+assert.doesNotMatch(card.shadowRoot.innerHTML, /heart-gap|heart-center|stroke-dasharray/, "heart chart is one solid line");
 
 // HR chart: statistics fill gaps >30 min from any raw reading; raw readings always included
 card._statistics["sensor.iphone_heart_rate"] = [
