@@ -95,6 +95,9 @@ assert.deepEqual(entityPanel.schema.map((field) => field.name), [
   "walking_heart_rate", "blood_oxygen",
   "respiratory_rate", "body_temperature", "blood_glucose",
   "body_fat_percentage", "lean_body_mass", "height",
+  "stand_hours", "water", "in_bed",
+  "sleep_deep", "sleep_core", "sleep_rem", "sleep_awake",
+  "move_goal", "exercise_goal", "stand_goal",
 ]);
 const tilePanel = form.schema.find((field) => field.icon === "mdi:view-grid-outline");
 assert.equal(tilePanel, undefined, "draggable metric switches must not be duplicated in ha-form");
@@ -300,5 +303,103 @@ assert.equal(discoveryCalls, 1, "entity discovery should be cached across ordina
 assert.ok(fastCard._relevantStateSignature().length < 3000, "render signature must not serialize large entity attributes");
 fastCard.disconnectedCallback();
 Card.discoverEntities = originalDiscoverEntities;
+
+// mobile_device filter must include sensors on linked child devices (via_device_id)
+{
+  const family = Card.deviceFamily({ devices: {
+    phone: { id: "phone" },
+    watch: { id: "watch", via_device_id: "phone" },
+    band: { id: "band", via_device_id: "watch" },
+    other: { id: "other" },
+  } }, "phone");
+  assert.deepEqual([...family].sort(), ["band", "phone", "watch"]);
+  const linkedCard = new Card();
+  linkedCard.config = { mobile_device: "phone", entities: {} };
+  linkedCard._detectedEntities = {};
+  linkedCard._hass = {
+    states: {
+      "sensor.watch_steps_today": companionStates["sensor.iphone_steps_today"],
+      "sensor.other_heart_rate": companionStates["sensor.iphone_heart_rate"],
+    },
+    entities: {
+      "sensor.watch_steps_today": { entity_id: "sensor.watch_steps_today", device_id: "watch" },
+      "sensor.other_heart_rate": { entity_id: "sensor.other_heart_rate", device_id: "other" },
+    },
+    devices: { phone: { id: "phone" }, watch: { id: "watch", via_device_id: "phone" }, other: { id: "other" } },
+  };
+  linkedCard._refreshDetectedEntities();
+  assert.deepEqual(linkedCard._detectedEntities, { steps: "sensor.watch_steps_today" });
+}
+
+// Re-registered Companion App sensors get a numeric collision suffix (_2)
+{
+  const ts = new Date().toISOString();
+  const suffixed = {
+    "sensor.marcel_iphone_17_pro_max_resting_heart_rate_2": { state: "57", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_health_steps_2": { state: "1221", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_heart_rate_2": { state: "62", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_sleep_duration_2": { state: "400", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_sim_1_2": { state: "x", last_updated: ts, attributes: {} },
+    "sensor.wohnzimmer_thermostat_idle_steps": { state: "0", last_updated: ts, attributes: {} },
+  };
+  const found = Card.discoverEntities({ states: suffixed });
+  assert.equal(found.steps, "sensor.marcel_iphone_17_pro_max_health_steps_2");
+  assert.equal(found.heart_rate, "sensor.marcel_iphone_17_pro_max_heart_rate_2");
+  assert.equal(found.resting_heart_rate, "sensor.marcel_iphone_17_pro_max_resting_heart_rate_2");
+  assert.equal(found.sleep_duration, "sensor.marcel_iphone_17_pro_max_sleep_duration_2");
+  // a plain match still wins over a suffixed one
+  const both = Card.discoverEntities({ states: { ...suffixed, "sensor.phone_heart_rate": { state: "70", last_updated: ts, attributes: {} } } });
+  assert.equal(both.heart_rate, "sensor.phone_heart_rate");
+}
+
+// Newer iOS Companion App sensors: stand hours, water, goals, separate sleep stages, floors fallback
+{
+  const ts = new Date().toISOString();
+  const st = (state, unit) => ({ state, last_updated: ts, attributes: unit ? { unit_of_measurement: unit } : {} });
+  const states = {
+    "sensor.boiler_water": st("55", "°C"),
+    "sensor.p_active_energy_2": st("159", "kcal"),
+    "sensor.p_move_goal": st("300", "kcal"),
+    "sensor.p_exercise_time_2": st("12", "min"),
+    "sensor.p_exercise_goal": st("30", "min"),
+    "sensor.p_stand_hours": st("2", "hours"),
+    "sensor.p_stand_goal": st("12", "hours"),
+    "sensor.p_water_2": st("750", "mL"),
+    "sensor.p_in_bed_2": st("407", "min"),
+    "sensor.p_deep_sleep_2": st("28", "min"),
+    "sensor.p_core_sleep_2": st("292", "min"),
+    "sensor.p_rem_sleep_2": st("79", "min"),
+    "sensor.p_awake_2": st("8", "min"),
+    "sensor.p_sleep_duration_2": st("398", "min"),
+    "sensor.p_flights_climbed_2": st("unavailable", "floors"),
+    "sensor.p_floors_ascended_2": st("0", "floors"),
+  };
+  const found = Card.discoverEntities({ states });
+  assert.equal(found.water, "sensor.p_water_2", "water needs a volume unit, so the boiler is skipped");
+  assert.equal(found.stand_hours, "sensor.p_stand_hours");
+  assert.equal(found.move_goal, "sensor.p_move_goal");
+  assert.equal(found.in_bed, "sensor.p_in_bed_2");
+  assert.equal(found.sleep_deep, "sensor.p_deep_sleep_2");
+  assert.equal(found.sleep_awake, "sensor.p_awake_2");
+  assert.equal(found.flights_climbed, "sensor.p_floors_ascended_2", "a live sensor beats an unavailable one");
+
+  const card = new Card();
+  card.setConfig({ entities: {} });
+  card._hass = { states, language: "de" };
+  card._detectedEntities = found;
+  assert.match(card._metric("active_calories", "x", "mdi:fire", "orange"), /159 \/ 300 <small>kcal<\/small>/);
+  assert.match(card._metric("stand_hours", "x", "mdi:human-handsup", "green"), /\/ 12/);
+  assert.equal(card._goalSuffix("steps"), "");
+
+  const yesterday = Date.now() - 86400000;
+  card._history = {
+    "sensor.p_deep_sleep_2": [{ t: yesterday, v: 60, a: {} }],
+    "sensor.p_core_sleep_2": [{ t: yesterday, v: 240, a: {} }],
+    "sensor.p_sleep_duration_2": [{ t: yesterday, v: 398, a: {} }],
+  };
+  const deep = card._dailySleepStage("deep_minutes");
+  assert.ok(deep.some((item) => item.has && item.value === 1), "deep sleep falls back to the separate stage sensor");
+  assert.ok(card._dailySleepStage("core_minutes").some((item) => item.has && item.value === 4));
+}
 
 console.log("Smoke test passed");

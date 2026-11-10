@@ -2,7 +2,7 @@
 
 # Health-Sync Dashboard Card
 
-[![Version](https://img.shields.io/badge/version-v0.6.5-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
+[![Version](https://img.shields.io/badge/version-v0.7.0-orange)](https://github.com/Caps3n/hass-app-health-sync-dashboard-card/releases)
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5)](https://hacs.xyz)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6%2B-0288d1)](https://www.home-assistant.io)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
@@ -27,10 +27,11 @@ Eine kompakte, responsive Home Assistant Dashboard-Karte für Gesundheitsdaten a
 - HA Companion App-Sensoren: Ruhe-/Geh-Herzfrequenz, Blutdruck, SpO₂, Atemfrequenz, Körpertemperatur, Blutzucker
 - Körperwerte: Körperfettanteil, Magermasse, Größe, Gewicht
 - Kacheln für Stockwerke, Trainingszeit, Geh-/Laufdistanz und VO₂ max
+- Kacheln für Stehstunden, Wasser und Zeit im Bett; aktive Kalorien, Trainingszeit und Stehstunden zeigen dein Apple-Health-Ziel (z. B. `159 / 300 kcal`), wenn die Ziel-Sensoren vorhanden sind
 - Schrittfortschrittsbalken
 - Unabhängige Schritt- und Kalorienskalen im Aktivitätsdiagramm
 - 24-Stunden-Herzfrequenzdiagramm mit stündlicher Statistik und Recorder-Fallback
-- Schlafphasendiagramm aus `deep_minutes`, `core_minutes`, `rem_minutes`, `awake_minutes`
+- Schlafphasendiagramm aus `deep_minutes`, `core_minutes`, `rem_minutes`, `awake_minutes` oder aus den einzelnen Sensoren *Deep / Core / REM Sleep* und *Awake* neuerer Companion-App-Versionen
 - Kompaktes responsives Layout für Masonry- und Sections-Dashboards
 - Oberfläche auf Deutsch, Englisch und Russisch
 
@@ -126,6 +127,9 @@ show_blood_glucose_metric: true
 show_body_fat_percentage_metric: true
 show_lean_body_mass_metric: true
 show_height_metric: true
+show_stand_hours_metric: true
+show_water_metric: true
+show_in_bed_metric: true
 
 # Optionale Kachelreihenfolge
 tile_order:
@@ -143,6 +147,25 @@ entities:
   steps: sensor.mein_iphone_schritte
   heart_rate: sensor.mein_iphone_herzfrequenz
 ```
+
+## Automatische Erkennung der Entitäten
+
+- Ist **`mobile_device`** gesetzt (Feld *Gerät* im Editor), nutzt die Karte nur
+  Sensoren dieses Handys. Sensoren an damit verknüpften Untergeräten (z. B. einer
+  gekoppelten Uhr) werden mitgenommen. So kann jede Person ihre eigene Karte haben.
+- Legt die Companion-App ihre Sensoren neu an, hängt Home Assistant eine Zahl an,
+  z. B. `sensor.mein_iphone_heart_rate_2`. Das kann z. B. nach dem Update auf
+  Home Assistant 2026.11 passieren. Ab v0.7.0 findet die Karte diese Sensoren
+  automatisch; ein Sensor ohne Zahl wird weiterhin bevorzugt.
+- Ruhe- und Geh-Herzfrequenz werden nie als normale Herzfrequenz verwendet.
+- Ein Sensor mit aktuellem Wert wird einem nicht verfügbaren vorgezogen, z. B.
+  *Floors Ascended* für Treppen, wenn *Flights Climbed* nicht verfügbar ist.
+
+**Fehlersuche:** Zeigt die Karte *Keine Gesundheitssensoren gefunden*, unter
+*Entwicklerwerkzeuge → Template*
+`{{ device_entities('<Geräte-ID>') | select('match', 'sensor.') | list }}`
+mit der `mobile_device`-ID aus dem YAML der Karte ausführen. Dann siehst du, welche
+Sensoren das Gerät hat. Jeder Sensor kann auch manuell unter `entities` gesetzt werden.
 
 ## Danksagung
 
