@@ -301,4 +301,52 @@ assert.ok(fastCard._relevantStateSignature().length < 3000, "render signature mu
 fastCard.disconnectedCallback();
 Card.discoverEntities = originalDiscoverEntities;
 
+// mobile_device filter must include sensors on linked child devices (via_device_id)
+{
+  const family = Card.deviceFamily({ devices: {
+    phone: { id: "phone" },
+    watch: { id: "watch", via_device_id: "phone" },
+    band: { id: "band", via_device_id: "watch" },
+    other: { id: "other" },
+  } }, "phone");
+  assert.deepEqual([...family].sort(), ["band", "phone", "watch"]);
+  const linkedCard = new Card();
+  linkedCard.config = { mobile_device: "phone", entities: {} };
+  linkedCard._detectedEntities = {};
+  linkedCard._hass = {
+    states: {
+      "sensor.watch_steps_today": companionStates["sensor.iphone_steps_today"],
+      "sensor.other_heart_rate": companionStates["sensor.iphone_heart_rate"],
+    },
+    entities: {
+      "sensor.watch_steps_today": { entity_id: "sensor.watch_steps_today", device_id: "watch" },
+      "sensor.other_heart_rate": { entity_id: "sensor.other_heart_rate", device_id: "other" },
+    },
+    devices: { phone: { id: "phone" }, watch: { id: "watch", via_device_id: "phone" }, other: { id: "other" } },
+  };
+  linkedCard._refreshDetectedEntities();
+  assert.deepEqual(linkedCard._detectedEntities, { steps: "sensor.watch_steps_today" });
+}
+
+// Re-registered Companion App sensors get a numeric collision suffix (_2)
+{
+  const ts = new Date().toISOString();
+  const suffixed = {
+    "sensor.marcel_iphone_17_pro_max_resting_heart_rate_2": { state: "57", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_health_steps_2": { state: "1221", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_heart_rate_2": { state: "62", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_sleep_duration_2": { state: "400", last_updated: ts, attributes: {} },
+    "sensor.marcel_iphone_17_pro_max_sim_1_2": { state: "x", last_updated: ts, attributes: {} },
+    "sensor.wohnzimmer_thermostat_idle_steps": { state: "0", last_updated: ts, attributes: {} },
+  };
+  const found = Card.discoverEntities({ states: suffixed });
+  assert.equal(found.steps, "sensor.marcel_iphone_17_pro_max_health_steps_2");
+  assert.equal(found.heart_rate, "sensor.marcel_iphone_17_pro_max_heart_rate_2");
+  assert.equal(found.resting_heart_rate, "sensor.marcel_iphone_17_pro_max_resting_heart_rate_2");
+  assert.equal(found.sleep_duration, "sensor.marcel_iphone_17_pro_max_sleep_duration_2");
+  // a plain match still wins over a suffixed one
+  const both = Card.discoverEntities({ states: { ...suffixed, "sensor.phone_heart_rate": { state: "70", last_updated: ts, attributes: {} } } });
+  assert.equal(both.heart_rate, "sensor.phone_heart_rate");
+}
+
 console.log("Smoke test passed");

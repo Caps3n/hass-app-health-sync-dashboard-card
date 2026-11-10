@@ -1,9 +1,9 @@
-/* Health-Sync Dashboard Card v0.6.3
+/* Health-Sync Dashboard Card v0.6.6
  * A dependency-free Lovelace card for the HA Companion App (Apple Health / Health Connect).
  * MIT License
  */
 
-const HS_VERSION = "0.6.5";
+const HS_VERSION = "0.6.6";
 const HS_METRICS = [
   "steps", "active_calories", "heart_rate",
   "heart_rate_variability", "sleep_duration",
@@ -345,6 +345,24 @@ class HealthSyncDashboardCard extends HTMLElement {
     return document.createElement("hass-app-health-sync-dashboard-card-editor");
   }
 
+  // The selected device plus all devices linked below it via via_device_id
+  // (e.g. a paired watch), so sensors on child devices are found too.
+  static deviceFamily(hass, deviceId) {
+    const family = new Set([deviceId]);
+    const devices = Object.values(hass?.devices || {});
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const device of devices) {
+        if (device?.id && family.has(device.via_device_id) && !family.has(device.id)) {
+          family.add(device.id);
+          grew = true;
+        }
+      }
+    }
+    return family;
+  }
+
   static discoverEntities(hass, allowedEntityIds) {
     const states = hass?.states || {};
     const stateEntries = Object.entries(states);
@@ -356,7 +374,15 @@ class HealthSyncDashboardCard extends HTMLElement {
       const exact = HS_ENTITY_CANDIDATES[metric].find((entityId) => states[entityId] && (!allowedEntityIds || allowedEntityIds.has(entityId)));
       if (exact) { entities[metric] = exact; continue; }
       const suffixes = HS_ENTITY_SUFFIXES[metric];
-      const match = sensorIds.find((entityId) => suffixes.some((suffix) => entityId.slice(7) === suffix || entityId.endsWith(`_${suffix}`)));
+      const ends = (objectId, suffix) => objectId === suffix || objectId.endsWith(`_${suffix}`);
+      // Skip IDs that belong to a more specific metric (e.g. resting_heart_rate is not heart_rate).
+      const otherSuffixes = HS_METRICS.filter((other) => other !== metric).flatMap((other) => HS_ENTITY_SUFFIXES[other]);
+      const matches = (objectId) => suffixes.some((suffix) => ends(objectId, suffix)
+        && !otherSuffixes.some((longer) => longer.length > suffix.length && longer.endsWith(`_${suffix}`) && ends(objectId, longer)));
+      // Prefer the plain entity ID; otherwise accept HA's collision suffix (e.g. sensor.phone_heart_rate_2),
+      // which appears when the Companion App re-registers its sensors.
+      const match = sensorIds.find((entityId) => matches(entityId.slice(7)))
+        || sensorIds.find((entityId) => /_\d+$/.test(entityId) && matches(entityId.slice(7).replace(/_\d+$/, "")));
       if (match) entities[metric] = match;
     }
     return entities;
@@ -454,9 +480,10 @@ class HealthSyncDashboardCard extends HTMLElement {
     let allowedEntityIds;
     const deviceId = this.config?.mobile_device;
     if (deviceId && this._hass?.entities) {
+      const deviceIds = HealthSyncDashboardCard.deviceFamily(this._hass, deviceId);
       allowedEntityIds = new Set(
         Object.entries(this._hass.entities)
-          .filter(([, entry]) => entry.device_id === deviceId)
+          .filter(([, entry]) => deviceIds.has(entry.device_id))
           .map(([entityId]) => entityId)
       );
     }
